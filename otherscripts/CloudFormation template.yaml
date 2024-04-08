@@ -1,0 +1,103 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS Photo Album Cloud Formation Template
+Resources:
+
+  S3BucketFrontend:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: photoalbum-assignment-wzxcm-b1
+      OwnershipControls:  # << Add
+        Rules:
+          - ObjectOwnership: ObjectWriter
+      WebsiteConfiguration:
+        IndexDocument: index.html
+    # DeletionPolicy: Retain
+
+  S3BucketPhotos:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: photoalbum-assignment-wzxcm-b2
+      OwnershipControls:  # << Add
+        Rules:
+          - ObjectOwnership: ObjectWriter
+    # DeletionPolicy: Retain
+
+  LambdaIndexPhotos:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: index-photos # new lambda function created by cloudformation
+      Code:
+        S3Bucket: 'wzxcm-zipfilesforlambda'
+        S3Key: lambda-template.zip
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.8
+      Role: !GetAtt IndexPhotosLambdaExecutionRole.Arn
+
+  IndexPhotosLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: IndexPhotosLambdaExecutionRole
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: IndexPhotosLambdaPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: !Sub "arn:aws:s3:::photoalbum-assignment-wzxcm-b2/*"
+
+  LambdaSearchPhotos:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      FunctionName: search-photos # new lambda function created by cloudformation
+      Code:
+        S3Bucket: 'wzxcm-zipfilesforlambda'
+        S3Key: lambda-template.zip
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.8
+      Role: !GetAtt SearchPhotosLambdaExecutionRole.Arn
+
+  SearchPhotosLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: SearchPhotosLambdaExecutionRole
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: SearchPhotosLambdaPolicy
+          PolicyDocument:
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - es:ESHttpGet
+                  - es:ESHttpPut
+                Resource: '*'
+
+  APIGatewayRestApi:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: PhotoAlbumAPI
+        
