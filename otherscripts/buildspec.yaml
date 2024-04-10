@@ -1,10 +1,18 @@
 version: 0.2
+
 phases:
-  install:
+  build:
     commands:
-      - aws cloudformation package --template-file template.yaml --s3-bucket wzxcm-zipfilesforlambda --output-template-file outputTemplate.yaml
-artifacts:
-  type: zip
-  files:
-    - template.yaml
-    - outputTemplate.yml
+      - ls
+      - cd ../lambdafunctions/index-photos
+      - ls
+      - zip -r LF1-index-photos.zip .
+      - ls
+      - aws s3 cp "./LF1-index-photos.zip" "s3://wzxcm-zipfilesforlambda/"
+      - cd ../../lambdafunctions/search-photos
+      - zip -r LF2-search-photos.zip .
+      - aws s3 cp "./LF2-search-photos.zip" "s3://wzxcm-zipfilesforlambda/"
+  post_build:
+    commands:
+      - aws lambda update-function-code \--function-name  index-photos \--s3-bucket wzxcm-zipfilesforlambda --s3-key LF1-index-photos.zip
+      - aws lambda update-function-code \--function-name  search-photos \--s3-bucket wzxcm-zipfilesforlambda --s3-key LF2-search-photos.zip
