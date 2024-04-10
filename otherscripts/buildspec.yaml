@@ -4,12 +4,12 @@ phases:
   build:
     commands:
       - ls
-      - cd ../lambdafunctions/index-photos
+      - cd lambdafunctions/index-photos
       - ls
       - zip -r LF1-index-photos.zip .
       - ls
       - aws s3 cp "./LF1-index-photos.zip" "s3://wzxcm-zipfilesforlambda/"
-      - cd ../../lambdafunctions/search-photos
+      - cd ../lambdafunctions/search-photos
       - zip -r LF2-search-photos.zip .
       - aws s3 cp "./LF2-search-photos.zip" "s3://wzxcm-zipfilesforlambda/"
   post_build:
