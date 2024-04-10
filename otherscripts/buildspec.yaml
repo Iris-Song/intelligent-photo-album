@@ -2,7 +2,7 @@ version: 0.2
 phases:
   install:
     commands:
-      - aws cloudformation package --template-file template.yaml --s3-bucket lambda-code-buckets --output-template-file outputTemplate.yaml
+      - aws cloudformation package --template-file template.yaml --s3-bucket wzxcm-zipfilesforlambda --output-template-file outputTemplate.yaml
 artifacts:
   type: zip
   files:
