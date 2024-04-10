@@ -66,7 +66,7 @@ function upload(e) {
       apigClient
         .uploadFolderItemPut(params, body, additionalParams)
         .then(function (res) {
-          alert("Upload SUCCESS");
+          alert("UPLOAD SUCCESS");
           document.getElementById("upload-photo-form").reset();
           document.getElementById("custom-labels").value = "";
         })
