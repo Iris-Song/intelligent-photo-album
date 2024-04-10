@@ -22,11 +22,8 @@ def lambda_handler(event, context):
          ]
     }
 
-    s3 = boto3.resource('s3', region_name=region)
-    obj = s3.Object(BUCKET_NAME, filename)
-    
-    s3client = boto3.client('s3')
-    metadata = s3client.head_object(Bucket=BUCKET_NAME, Key=filename)
+    s3 = boto3.client('s3')
+    metadata = s3.head_object(Bucket=BUCKET_NAME, Key=filename)
     print("METADATA", metadata)
     
 
@@ -43,8 +40,7 @@ def lambda_handler(event, context):
 
 
     # Extract custom labels and add them to json object
-    
-    if 'x-amz-meta-customlabels' in metadata['ResponseMetadata']['HTTPHeaders']:
+    if metadata and 'x-amz-meta-customlabels' in metadata['ResponseMetadata']['HTTPHeaders']:
         customLabels = metadata['ResponseMetadata']['HTTPHeaders']['x-amz-meta-customlabels']
         customLabelsArr = [x.strip() for x in customLabels.split(',')]
         print('custom labels', customLabelsArr)
@@ -70,7 +66,6 @@ def lambda_handler(event, context):
     )
     # https://docs.aws.amazon.com/elasticsearch-service/latest/developerguide/es-request-signing.html#es-request-signing-python
 
-
     print('json', json_object)
 
     # Add to ElasticSearch
@@ -78,24 +73,7 @@ def lambda_handler(event, context):
     res = es.index(index="photos", doc_type="Photo", body=json.dumps(json_object))
     print("RESULT", res['result'])
 
-
     return {
         'statusCode': 200,
         # 'body': json.dumps('Hello from Lambda!')
-    }
-    
-    
-    # #print("Received event: " + json.dumps(event, indent=2))
-
-    # # Get the object from the event and show its content type
-    # bucket = event['Records'][0]['s3']['bucket']['name']
-    # key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
-    # try:
-    #     response = s3.get_object(Bucket=bucket, Key=key)
-    #     print("CONTENT TYPE: " + response['ContentType'])
-    #     return response['ContentType']
-    # except Exception as e:
-    #     print(e)
-    #     print('Error getting object {} from bucket {}. Make sure they exist and your bucket is in the same region as this function.'.format(key, bucket))
-    #     raise e
-              
+    }  

@@ -87,10 +87,8 @@ def lambda_handler(event, context):
     unique_results = list(set(searchresults))
     print("UNIQUE RESULTS", unique_results)
 
-
     return {
         "statusCode": 200,
         'headers': {"Access-Control-Allow-Origin": "*"},
         "body": json.dumps(unique_results)
-        # "isBase64Encoded": true|false,
     }
