@@ -12,71 +12,31 @@ function upload(e) {
   let customLabels = $("#custom-labels").val();
   console.log("custom-labels", customLabels);
 
-  // Convert Image to Base 64
-  // https://stackoverflow.com/questions/36280818/how-to-convert-file-to-base64-in-javascript
-  function getBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsText(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onload = () => {
-        let encoded = reader.result.replace(/^data:(.*;base64,)?/, "");
-        if (encoded.length % 4 > 0) {
-          encoded += "=".repeat(4 - (encoded.length % 4));
-        }
-        resolve(encoded);
-      };
-      reader.onerror = (error) => reject(error);
-    });
-  }
-
   // Uploading to S3 bucket via API /PUT method
-  async function uploadphotoPUT() {
-    e.preventDefault();
-    console.log("Upload button clicked...");
+  function uploadPhotoAxios() {
 
-    // Connect to API Gateway
-    let apigClient = apigClientFactory.newClient({
-      apiKey: APIKEY,
-      defaultContentType: fileInfo.type,
-    });
-    console.log("apigClient", apigClient);
-    console.log("Content-Type", fileInfo.type);
-
-    let params = {
-      folder: "photoalbum-assignment-wzxcm-b2",
-      item: filename,
-      "Content-Type": fileInfo.type,
-      "x-amz-meta-customLabels": customLabels, // Add custom labels here *
+    let additionalParams = {
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'OPTIONS, PUT',
+            'Access-Control-Allow-Headers':'*',
+            'Content-Type': fileInfo.type,
+            'x-amz-meta-customlabels': customLabels
+        }
     };
-    let additionalParams = {};
-
-    // console.log("fileInfo", fileInfo);
-    // let body = ;
-    // apigClient.uploadFolderItemPut(params, body, additionalParams)
-    //         .then(function(res){
-    //          console.log("Upload SUCCESS");
-    //         }).catch( function(result){
-    //           alert("UPLOAD FAILED");
-    //         });
-
-    getBase64(fileInfo).then((data) => {
-      let body = data;
-      console.log("images:", body);
-      apigClient
-        .uploadFolderItemPut(params, body, additionalParams)
-        .then(function (res) {
-          alert("UPLOAD SUCCESS");
-          document.getElementById("upload-photo-form").reset();
-          document.getElementById("custom-labels").value = "";
-        })
-        .catch(function (result) {
-          alert("UPLOAD FAILED");
-        });
+    url = "https://phnp6gfh80.execute-api.us-east-1.amazonaws.com/t/upload/photoalbum-assignment-wzxcm-b2/" + filename
+    axios.put(url, fileInfo, additionalParams).then(res => {
+      if (res.status == 200){
+        alert("UPLOAD SUCCESS");
+        document.getElementById("upload-photo-form").value = "";
+        document.getElementById("custom-labels").value = "";
+      }else{
+        alert("UPLOAD FAILED");
+      }
     });
   }
 
-  uploadphotoPUT();
+  uploadPhotoAxios();
 }
 
 // search for images
